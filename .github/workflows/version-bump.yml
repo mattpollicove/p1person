@@ -1,0 +1,78 @@
+name: Version Bump and Changelog
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Get current version
+        id: get_version
+        run: |
+          VERSION=$(grep "VERSION = " p1person.py | sed 's/VERSION = "\(.*\)"/\1/')
+          echo "current_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+      
+      - name: Check if version was manually updated
+        id: check_manual
+        run: |
+          git diff HEAD~1 HEAD -- p1person.py | grep "VERSION = " && echo "manual=true" >> $GITHUB_OUTPUT || echo "manual=false" >> $GITHUB_OUTPUT
+      
+      - name: Bump version
+        if: steps.check_manual.outputs.manual == 'false'
+        id: bump
+        run: |
+          CURRENT="${{ steps.get_version.outputs.current_version }}"
+          # Increment by 0.01
+          NEW=$(echo "$CURRENT + 0.01" | bc)
+          echo "new_version=$NEW" >> $GITHUB_OUTPUT
+          echo "Bumping version from $CURRENT to $NEW"
+          
+          # Update version in p1person.py
+          sed -i "s/VERSION = \"$CURRENT\"/VERSION = \"$NEW\"/" p1person.py
+          
+          # Update version in README.md
+          sed -i "s/\*\*Version:\*\* $CURRENT/\*\*Version:\*\* $NEW/" README.md
+      
+      - name: Update CHANGELOG
+        if: steps.check_manual.outputs.manual == 'false'
+        run: |
+          NEW="${{ steps.bump.outputs.new_version }}"
+          DATE=$(date +%Y-%m-%d)
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          
+          # Create new changelog entry
+          echo "" > /tmp/new_entry.md
+          echo "## [$NEW] - $DATE" >> /tmp/new_entry.md
+          echo "" >> /tmp/new_entry.md
+          echo "### Changed" >> /tmp/new_entry.md
+          echo "- $COMMIT_MSG" >> /tmp/new_entry.md
+          echo "" >> /tmp/new_entry.md
+          
+          # Insert after first "## [" line in CHANGELOG
+          sed -i "/## \[/r /tmp/new_entry.md" CHANGELOG.md
+      
+      - name: Commit version bump
+        if: steps.check_manual.outputs.manual == 'false'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add p1person.py README.md CHANGELOG.md
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
+          git push

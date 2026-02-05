@@ -1,0 +1,22 @@
+# PingOne Connection Configuration
+# This file is automatically managed by p1person
+# Client secret is encrypted for security
+
+# Connection Details
+friendly_name=MyEnvironment
+environment_id=your-environment-id-here
+client_id=your-client-id-here
+client_secret_encrypted=your-encrypted-secret-here
+
+# Logging Configuration (Optional)
+# Valid levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+# api_log_level=INFO
+# connection_log_level=INFO
+
+# Additional Custom Attributes
+# Add your custom attributes using the format: badgeNumber=Badge Number
+# These can be used with the -a flag
+# Examples:
+# badgeNumber=Employee badge number
+# costCenter=Department cost center code
+# building=Office building location

@@ -1,0 +1,109 @@
+create a command line driven python application called p1person that reads PingOne friendly name, environmentid, clientid, and client secret from a file called p1person.properties in standard Java properties format (key=value pairs)
+
+this is version 0.2, increment version by .01 on every github push unless the version was manually updated.
+ 
+upon connection to the PingOne system it should create custom attributes based on the LDAP inetOrgPerson schema. If the attribute is already present, attribute creation should be skipped and a notice displayed on the screen. The default list of attributes to be supported are (note: title and preferredLanguage are intentionally excluded and never added or removed):
+
+businessCategory: The type of business performed by the organization.
+carLicense: Vehicle license plate or registration.
+department: The organizational department name.
+departmentNumber: Identifies a specific department.
+employeeNumber: A numeric or alphanumeric ID assigned by the organization.
+employeeType: The nature of employment (e.g., Contractor, Intern, Temp).
+homePhone: The user's home telephone number.
+homePostalAddress: The user's home address.
+manager: The name of the user's manager. (This does not update as LDAP Manager does)
+o: The organization name.
+roomNumber: The user's office or room number.
+secretary: The name of the user's administrative assistant. (This does not update as LDAP Manager does)
+
+command line arguments and functionality include 
+
+-h --help display this help information
+
+-p --prefix [prefixname] prepend a unique string to the attribute names e.g., -p PingPerson would result in PingPersonManager (can be used with -r to remove prefixed attributes)
+
+-c --clear if an attribute is found to be already in the system any assigned value is cleared (cannot be used with -r). Prompts for confirmation unless -y is specified or --dryrun is used.
+
+-r --remove remove the set of attributes (use with -p to remove prefixed attributes). Prompts for confirmation unless -y is specified or --dryrun is used.
+
+-d --display show the attributes defined in the system (cannot be used with -r). Works with -a to show only additional attributes.
+
+-t --testconnection tests connection properties based on the p1person.properties file (This does not work with any other arguments)
+
+--dryrun do a test based on connection settings for -p -c -r operations. Display any errors or information returned from PingOne. No confirmation required.
+
+-n --newconnection initiate a dialog to update connection information in p1person.properties asking for friendly name, environment id, client id, and client secret. Securely encrypt and store the client secret in the p1person.properties file using Fernet encryption. If p1person.properties does not exist this should be triggered automatically. The properties file should use standard Java properties format (key=value pairs) with comments.
+
+-a --additionalattributes read a custom list of attributes from p1person.properties using the format: additional_attribute.name=description. Works with -d, -r, -c, and when creating attributes. When used alone, creates the additional attributes.
+
+-y --yes automatically accept all confirmation prompts. Use with -r or -c to skip confirmation dialogs.
+
+logging
+create a connections.log file to track date and time connection made including the friendly name of the connection
+
+create an apilog.log showing the api calls made to PingOne
+
+additional project files and rules
+create a readme.md based on this document
+create a changelog.md based on all pushes
+create a requirements.txt holding any library requirements
+.gitignore should include log files and any other files mandated by best practices
+
+development rules 
+##These rules override your default behavior.
+-always develop and test according to best practices
+
+## Do NOT invent API calls
+- Only use API endpoints, fields, JSON bodies, and media types that:
+  - Exist in the PingOne official docs or Postman collections,
+  - OR appear in project spec files (`mfaflow.md`, `fido2.md`, `totp.md`, `devicePrompt.md`, `mfa-authn-main-page.md`).
+- If an endpoint or field CANNOT be verified:
+  - STOP and insert:
+    ```ts
+    // TODO: Undefined in PingOne docs/specs — requires human confirmation
+    ```
+  - Do **not** guess, infer, or extrapolate.
+
+## Do NOT generate code loops that can hang or break flows
+- No infinite loops, no `while(true)`.
+- All loops MUST have:
+  - Max retries, OR
+  - Timeouts, OR
+  - Backoff.
+- All polling must avoid UI freeze or server blocking.
+
+## Do NOT create unstable or unsafe code
+- Wrap all HTTP, WebAuthn, crypto, file, and async calls in try/catch.
+- No floating promises — ALWAYS `await` or `.catch()`.
+- Never swallow errors silently.
+- Always return structured error states, not raw text or broken objects.
+
+## Documentation ALWAYS wins
+- If PingOne docs contradict the existing code, follow the docs.
+- If the docs are unclear:
+  - Preserve current stable behavior,
+  - Insert a TODO,
+  - Do NOT make assumptions.
+
+## DO NOT introduce new functionality unless explicitly requested
+- Maintain the existing UX unless the prompt asks for UI changes.
+- Preserve all required behavior (Unified Flow, AuthN, Registration, FIDO2, TOTP, Device Selection, MFA Policy logic).
+
+## Testing
+- all new code should be unit tested
+- unit tests and results should be kept in a log file
+
+## Always comment code
+- Remove old comments when no longer relevant
+= Update `README`/config or per-profile settings when adding persistent behavior.
+
+## logging
+- all warnings and errors should be logged
+- log files should be prepended with the date in the file name
+- all log events should include the time according to the system clock
+
+
+
+
+

@@ -1,0 +1,12 @@
+# Python dependencies for p1person
+# PingOne Custom Attribute Management Tool
+
+# HTTP requests library for API calls
+requests>=2.31.0
+
+# Cryptography for secure credential storage
+cryptography>=41.0.0
+
+# Testing (optional, for development)
+# These are part of standard library but listed for clarity
+# unittest - included in Python standard library
