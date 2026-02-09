@@ -1,0 +1,15 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include QUICKSTART.md
+include INSTALL.md
+include requirements.txt
+include p1person.prompt
+include p1person.properties.example
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+exclude .gitignore
+exclude setup.sh
+exclude setup.bat
+exclude test_p1person.py
+exclude p1person.properties
