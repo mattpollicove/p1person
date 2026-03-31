@@ -48,6 +48,13 @@ def validate_arguments(args):
         if any(other_args):
             return False, "ERROR: -t/--testconnection cannot be used with other arguments"
     
+    # -v/--viewconfig cannot be used with other arguments (except --view)
+    if args.viewconfig:
+        other_args = [args.prefix, args.clear, args.remove, args.display, 
+                     args.dryrun, args.newconnection, args.additionalattributes, args.testconnection]
+        if any(other_args):
+            return False, "ERROR: -v/--viewconfig cannot be used with other arguments"
+    
     # -c/--clear cannot be used with -r/--remove
     if args.clear and args.remove:
         return False, "ERROR: -c/--clear cannot be used with -r/--remove"
@@ -91,6 +98,7 @@ Examples:
   p1person -r                       Remove attributes (with confirmation)
   p1person -r -y                    Remove attributes without confirmation
   p1person -c -a                    Clear additional attribute values
+  p1person -v                       View current connection properties
   p1person -t                       Test connection
   p1person -n                       Configure new connection
   p1person -a                       Create additional custom attributes
@@ -115,7 +123,10 @@ Examples:
                        help='Read custom list of attributes from p1person.properties')
     parser.add_argument('-y', '--yes', action='store_true',
                        help='Automatically accept all confirmations (use with -r or -c)')
-    parser.add_argument('-v', '--version', action='version', version=f'p1person {VERSION}')
+    parser.add_argument('-v', '--viewconfig', action='store_true',
+                       help='Display current connection properties (standalone only)')
+    parser.add_argument('--version', action='version', version=f'p1person {VERSION}')
+    parser.add_argument('--view', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--Skynet', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--Cyberdyne', action='store_true', help=argparse.SUPPRESS)
     
@@ -151,6 +162,48 @@ Examples:
             config_manager.create_new_connection()
             # Offer to test connection after initial setup
             config_manager.offer_connection_test(api_logger, connection_logger)
+        
+        # Handle view config
+        if args.viewconfig:
+            try:
+                config = config_manager.load_config(prompt_for_missing=True)
+                print("\n=== PingOne Connection Properties ===")
+                print(f"Friendly Name:   {config.get('friendly_name', 'N/A')}")
+                print(f"Environment ID:  {config.get('environment_id', 'N/A')}")
+                print(f"Client ID:       {config.get('client_id', 'N/A')}")
+                
+                # Show encrypted secret normally
+                if not args.view:
+                    encrypted_secret = config.get('client_secret_encrypted', 'N/A')
+                    # Truncate for display
+                    if len(encrypted_secret) > 40:
+                        encrypted_secret = encrypted_secret[:40] + "..."
+                    print(f"Client Secret:   {encrypted_secret} (encrypted)")
+                else:
+                    # Show decrypted secret for testing (undocumented --view flag)
+                    print(f"Client Secret:   {config.get('client_secret', 'N/A')} (decrypted)")
+                
+                # Show optional log levels if configured
+                if 'api_log_level' in config:
+                    print(f"\nLogging Configuration:")
+                    print(f"API Log Level:        {config.get('api_log_level', 'INFO')}")
+                    print(f"Connection Log Level: {config.get('connection_log_level', 'INFO')}")
+                
+                # Show additional attributes if configured
+                additional_attrs = config.get('additional_attributes', {})
+                if additional_attrs:
+                    print(f"\nAdditional Attributes ({len(additional_attrs)}):")
+                    for attr_name, attr_desc in additional_attrs.items():
+                        print(f"  {attr_name}: {attr_desc}")
+                
+                print()
+                return 0
+            except ValueError as e:
+                print(f"✗ Configuration error: {str(e)}")
+                return 1
+            except Exception as e:
+                print(f"✗ Failed to load configuration: {str(e)}")
+                return 1
         
         # Load config with option to prompt for missing fields
         try:

@@ -66,8 +66,8 @@ To define custom attributes beyond the default inetOrgPerson schema:
 
 ```properties
 # Additional Custom Attributes
-customAttribute1=Description of custom attribute
-customAttribute2=Another custom attribute
+additional_attribute.customAttribute1=Description of custom attribute
+additional_attribute.customAttribute2=Another custom attribute
 ```
 
 2. Use the `-a` flag to work with these custom attributes
@@ -117,7 +117,7 @@ The following **12 inetOrgPerson attributes** are supported by default:
 ### Command Line Arguments
 
 ```bash
-usage: p1person.py [-h] [-p PREFIX] [-c] [-r] [-d] [-t] [--dryrun] [-n] [-a] [-y] [-v]
+usage: p1person.py [-h] [-p PREFIX] [-c] [-r] [-d] [-t] [--dryrun] [-n] [-a] [-y] [-v] [--version]
 
 p1person - PingOne Custom Attribute Management Tool
 
@@ -134,7 +134,8 @@ optional arguments:
   -a, --additionalattributes
                         Read custom list of attributes from p1person.properties
   -y, --yes             Automatically accept all confirmations (use with -r or -c)
-  -v, --version         show program's version number and exit
+  -v, --viewconfig      Display current connection properties (standalone only)
+  --version             show program's version number and exit
 ```
 
 **Note:** The `-r` (remove) and `-c` (clear) operations will prompt for confirmation unless:
@@ -203,6 +204,12 @@ python p1person.py -c -a
 python p1person.py -c
 ```
 
+**View current connection properties:**
+```bash
+python p1person.py -v
+# Displays friendly name, environment ID, client ID, and encrypted secret
+```
+
 **Test connection:**
 ```bash
 python p1person.py -t
@@ -227,6 +234,7 @@ python p1person.py -p MyPrefix --dryrun
 ### Argument Restrictions
 
 - `-t/--testconnection` cannot be used with any other arguments
+- `-v/--viewconfig` cannot be used with any other arguments
 - `-p/--prefix` cannot be used with `-r/--remove`
 - `-c/--clear` cannot be used with `-r/--remove`
 - `-d/--display` cannot be used with `-r/--remove`

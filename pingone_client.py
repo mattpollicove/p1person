@@ -74,7 +74,7 @@ class PingOneClient:
     def _get_access_token(self):
         """
         Obtain OAuth2 access token from PingOne.
-        Uses client credentials grant type.
+        Uses client credentials grant type with HTTP Basic Authentication.
         
         Returns:
             str: Access token
@@ -90,10 +90,9 @@ class PingOneClient:
         # Token endpoint according to PingOne documentation
         token_url = f'https://auth.pingone.com/{self.environment_id}/as/token'
         
+        # Use only grant_type in body, credentials in Basic Auth header
         data = {
-            'grant_type': 'client_credentials',
-            'client_id': self.client_id,
-            'client_secret': self.client_secret
+            'grant_type': 'client_credentials'
         }
         
         headers = {
@@ -103,7 +102,14 @@ class PingOneClient:
         start_time = time.time()
         
         try:
-            response = requests.post(token_url, data=data, headers=headers, timeout=30)
+            # Send credentials via HTTP Basic Authentication (client_secret_basic method)
+            response = requests.post(
+                token_url, 
+                data=data, 
+                headers=headers, 
+                auth=(self.client_id, self.client_secret),
+                timeout=30
+            )
             response_time = time.time() - start_time
             
             self._log_api_call('POST', token_url, response.status_code, response_time)

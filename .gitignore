@@ -5,6 +5,9 @@
 p1person.properties
 .p1person.key
 
+# Internal documentation (contains undocumented commands)
+SECRETS.md
+
 # Log files (date-stamped logs)
 logs/
 *.log

@@ -362,11 +362,11 @@ class ConfigManager:
                     
                     # Add template section for additional attributes
                     f.write("\n# Additional Custom Attributes\n")
-                    f.write("# Add your custom attributes using the format: badgeNumber=Badge Number\n")
+                    f.write("# Add your custom attributes using the format: additional_attribute.attributeName=Description\n")
                     f.write("# These can be used with the -a flag\n")
                     f.write("# Examples:\n")
-                    f.write("# badgeNumber=Employee badge number\n")
-                    f.write("# costCenter=Department cost center code\n")
+                    f.write("# additional_attribute.badgeNumber=Employee badge number\n")
+                    f.write("# additional_attribute.costCenter=Department cost center code\n")
             
             # Make config file read-only for owner
             os.chmod(self.config_path, 0o600)
